@@ -11,6 +11,9 @@ import datetime
 from openpyxl.styles import PatternFill
 
 
+TABEL_FILENAME_LIST = []
+
+
 
 def sutuation_obosration(night_days_second_half,count_of_work_days,day_days_first_half,night_days_first_half,count_of_work_hours,day_hours_first_half,night_hours_first_half,day_hours_second_half,night_hours_second_half,day_days_second_half,r):
         for i in sheet[f'E{r}:T{r}'][0]:   #берем строчку, где написано, был/не был на работе,  и т.п.
@@ -237,6 +240,7 @@ def merge_cells_fun_inside(start_col, last_col, fpos_row, lpos_row, k,text):
 for DEPARTMENT in DEPARTMENTS:    
     #создаем файл для каждого департмента 
     file = f'{DEPARTMENT}.xlsx'
+    TABEL_FILENAME_LIST.append(file)
     copy('TableForm.xlsx', file) #название можно поменять
     wb = xl.load_workbook(file,data_only=True)
     sheet = wb['Табель'] #название листа, можно поменять на нужный в шаблоне на входе (то есть в TableForm.xlsx)
@@ -293,19 +297,19 @@ for DEPARTMENT in DEPARTMENTS:
         
         days_count=1 #идет счет дней, чтобы после 15-ого дня перейти на новую строчку для второй половины месяца
         #если не IT_файл. То есть берем департменты где надо просто проставить 5 по 8
-        #if (file != "Отдел информационных технологий.xlsx"):
-        for i in range(1, amount_days_in_the_month): #весь месяц, от первого до последнего дня  
-            while(days_count<30+1): #вторая половина 
-                while(days_count < 15+1): #первая половина
-                    standart_5_8_day_fraction(day_in_the_month,column_for_work_days, day_fraction_for_lazy_ass, 0) #проставление рабочих дней и часов
+        if (file != "Отдел информационных технологий.xlsx"):
+            for i in range(1, amount_days_in_the_month): #весь месяц, от первого до последнего дня  
+                while(days_count<30+1): #вторая половина 
+                    while(days_count < 15+1): #первая половина
+                        standart_5_8_day_fraction(day_in_the_month,column_for_work_days, day_fraction_for_lazy_ass, 0) #проставление рабочих дней и часов
+                        day_in_the_month+=1
+                        days_count+=1
+                        column_for_work_days+=1         
+                    if(days_count == 16): column_for_work_days = 5 #начинаем с 5-ого столбца, идем до 22; сделано так, потому что месяц в таблице поделен на 2 части, и приходится начинать с "начала"
+                    standart_5_8_day_fraction(day_in_the_month,column_for_work_days, day_fraction_for_lazy_ass, 2)   
                     day_in_the_month+=1
                     days_count+=1
                     column_for_work_days+=1         
-                if(days_count == 16): column_for_work_days = 5 #начинаем с 5-ого столбца, идем до 22; сделано так, потому что месяц в таблице поделен на 2 части, и приходится начинать с "начала"
-                standart_5_8_day_fraction(day_in_the_month,column_for_work_days, day_fraction_for_lazy_ass, 2)   
-                day_in_the_month+=1
-                days_count+=1
-                column_for_work_days+=1         
                 
                 
         else:   
@@ -559,10 +563,10 @@ dict_tabel_spec = {
 DATASOURCE_FILENAME_1 = 'отпуска.xls'
 TABEL_FILENAME = 'ОИТ Табель до 15.10.xlsx'
 #TABEL_FILENAME_LIST = ['ОИТ Табель до 15.10.xlsx']
-TABEL_FILENAME_LIST = ['Отдел информационных технологий.xlsx']
+#TABEL_FILENAME_LIST = ['Отдел информационных технологий.xlsx']
 DATASOURCE_FILENAME_2= '1. Больничный.xlsx'
 #DATASOURCE_FILENAME = '3. ДР.xlsx'
-CODES_FILENAME = '5. Условные обозначения.xlsx'
+CODES_FILENAME = '5. Условные обозначения_special.xlsx'
 
 
 fda = ('id', *[str(i) for i in range(1,16)])
@@ -619,6 +623,7 @@ def fill_cell(ws, count, index, value):
     col = col_num(int(index))
     cell = ws.cell(column = col, row = line)
     cell.value = value
+    print(value, cell.value)
     cell = ws.cell(column = col, row = line + 1)
     cell.value = 0
     return None
@@ -640,7 +645,7 @@ def match_dates(df_tbl, ind, df_sl, tabel_spec, type, df_codes):
         is_fromto_date(df_sl, tabel_spec, tabel_spec[1], ind)]
     if(not df.empty):
         df1 = df_codes.loc[lambda x: x[tabel_spec[4]] == df[tabel_spec[3]][df[tabel_spec[3]].index[0]]]
-        print(df1['Буквенный код'][df1['Буквенный код'].index[0]])
+        #print(df1['Буквенный код'][df1['Буквенный код'].index[0]])
         return df1['Буквенный код'][df1['Буквенный код'].index[0]]
     return None
 
